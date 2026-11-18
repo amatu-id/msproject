@@ -128,7 +128,7 @@ class UsageView extends V.SplitView {
       onHeadCtx: (e, c) => this.app.headMenu(e, kind, this, c),
       onColsChange: cols => { F.saveCols(this.app.P, kind, this.table, cols); this.app.viewChanged(); },
       onToggle: r => this.app.cmd('toggleRow', r.x),
-      canEdit: r => r.kind !== 'group',
+      canEdit: r => r.kind !== 'group' && !this.app.readOnly,
     });
     this.chart = new UsageChart({
       app: this.app, host: this.right, ppd: V.vs(P).zoom[this.id] || 9, rowH: () => this.app.rowH(), headH: () => 42, sel: () => this.grid.selKeys,

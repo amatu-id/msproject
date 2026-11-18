@@ -49,7 +49,7 @@ Store.thumb = P => {
 Store.metaOf = P => ({
   id: P.id, name: P.name, updated: P.updated || Date.now(), created: P.created || Date.now(),
   start: P.root ? P.root.start : P.start, finish: P.root ? P.root.finish : P.finish, pct: P.root ? P.root.pct : 0,
-  n: P.tasks.length, nr: P.res.length, cost: P.root ? P.root.cost : 0, starred: !!P.starred, locked: !!P.lock, thumb: P.lock ? [] : Store.thumb(P), rev: P.rev || 0,
+  n: P.tasks.length, nr: P.res.length, cost: P.root ? P.root.cost : 0, starred: !!P.starred, locked: !!P.lock, shared: P.share ? (P.share.owner ? 'owner' : P.share.revoked ? 'revoked' : P.share.role || 'view') : null, thumb: P.lock ? [] : Store.thumb(P), rev: P.rev || 0,
 });
 Store.put = async P => {
   const data = M.clean(P);

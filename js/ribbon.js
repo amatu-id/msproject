@@ -117,6 +117,7 @@ R.init = () => {
   U.$('#qat-undo').addEventListener('click', () => app().cmd('undo'));
   U.$('#qat-redo').addEventListener('click', () => app().cmd('redo'));
   U.$('#qat-print').addEventListener('click', () => app().cmd('print'));
+  const sb = U.$('#btn-share'); if (sb) sb.addEventListener('click', () => app().cmd('share'));
   const ti = U.$('#doc-title');
   ti.addEventListener('change', () => { const v = ti.value.trim(); if (!v) { ti.value = app().P.name; return; } app().tx('Ganti nama proyek', P => { P.name = v; P.props.title = v; }); document.title = v + ' — Amatu Project'; });
   ti.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); ti.blur(); app().view && app().view.focus && app().view.focus(); } });
@@ -261,6 +262,7 @@ function infoPage(close) {
         el('button.btn', { type: 'button', onclick: () => { close(); A.cmd('projectInfo'); } }, icon('info'), 'Informasi Proyek'),
         el('button.btn', { type: 'button', onclick: () => { close(); A.cmd('stats'); } }, icon('query_stats'), 'Statistik'),
         el('button.btn', { type: 'button', onclick: () => { close(); A.cmd('rename'); } }, icon('edit'), 'Ganti Nama'),
+        el('button.btn', { type: 'button', onclick: () => { close(); A.cmd('share'); } }, icon('share'), P.share ? 'Tautan berbagi…' : 'Bagikan'),
         AP.Lock ? el('button.btn', { type: 'button', onclick: () => { close(); A.cmd('lock'); } }, icon(P.lock ? 'lock' : 'lock_open'), P.lock ? 'Kata Sandi…' : 'Kunci dengan Kata Sandi') : null)),
     el('div.bs-card', el('h3', 'Properti'), el('table.bs-props', ...[['Judul', P.props.title || P.name], ['Subjek', P.props.subject], ['Penulis', P.props.author], ['Manajer', P.props.manager], ['Perusahaan', P.props.company], ['Dibuat', U.fmtDate(Math.round((P.created - new Date().getTimezoneOffset() * 60000) / 60000), 'dd mmm yyyy HH.MM')], ['Terakhir diubah', U.fmtDate(Math.round((P.updated - new Date().getTimezoneOffset() * 60000) / 60000), 'dd mmm yyyy HH.MM')]].map(([a, b]) => el('tr', el('td', a), el('td', b || '—'))))),
   );

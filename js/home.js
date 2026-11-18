@@ -66,7 +66,7 @@ function projCard(m) {
   const card = el('div.h-pc', { tabIndex: 0, role: 'button', onclick: e => { if (!e.target.closest('.h-pc-menu')) open(); }, onkeydown: e => { if (e.key === 'Enter') open(); } },
     el('div.h-pc-art', m.locked ? el('div.h-lock', icon('lock'), 'Terkunci') : thumbSVG(m.thumb || [])),
     el('div.h-pc-body',
-      el('div.h-pc-t', m.starred ? icon('star', 'star') : null, el('b', m.name || 'Tanpa nama')),
+      el('div.h-pc-t', m.starred ? icon('star', 'star') : null, el('b', m.name || 'Tanpa nama'), m.shared ? el('span.h-sh.' + m.shared, { 'data-tip': { owner: 'Anda membagikan proyek ini', edit: 'Dibuka dari tautan edit', view: 'Dibuka dari tautan lihat saja', revoked: 'Tautan tidak berlaku' }[m.shared] }, icon(m.shared === 'owner' ? 'group' : m.shared === 'edit' ? 'edit' : m.shared === 'revoked' ? 'link_off' : 'visibility')) : null),
       el('div.h-pc-d', fd(m.start) + ' – ' + fd(m.finish)),
       el('div.h-pc-m', el('span.h-prog', el('i', { style: { width: (m.pct || 0) + '%' } })), el('span', U.num(m.pct || 0, 0) + '%'), el('span.h-dot', '·'), el('span', (m.n || 0) + ' tugas'), el('span.h-dot', '·'), el('span', ago))),
     el('button.icon-btn.sm.h-pc-menu', { type: 'button', 'aria-label': 'Menu proyek', onclick: e => { e.stopPropagation(); menu(m, e.currentTarget); } }, icon('more_vert')));

@@ -23,7 +23,8 @@ app.applyTheme = () => {
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => app.applyTheme());
 
 /* ---------------- transaksi & riwayat ---------------- */
-const snapOf = P => { const c = M.clean(P); delete c.view; return JSON.stringify(c); };
+const snapOf = P => { const c = M.clean(P); delete c.view; delete c.share; return JSON.stringify(c); };
+app.snapOf = snapOf;
 app.rowH = () => (app.P && app.P.opts.rowH) || 24;
 app.tx = (label, fn, o = {}) => {
   const P = app.P;
@@ -44,9 +45,9 @@ app.tx = (label, fn, o = {}) => {
   return true;
 };
 app.restore = (s, quiet) => {
-  const view = app.P.view, id = app.P.id;
+  const view = app.P.view, id = app.P.id, share = app.P.share;
   const P = M.fix(JSON.parse(s));
-  P.view = view; P.id = id;
+  P.view = view; P.id = id; P.share = share;
   app.P = P;
   app.recalc();
   if (!quiet) { app.markDirty(); app.refresh(); }
@@ -87,7 +88,10 @@ app.markDirty = (viewOnly) => {
   clearTimeout(saveT);
   saveT = setTimeout(() => app.save(), 1100);
   if (!viewOnly && !editedSinceOpen) { editedSinceOpen = true; app.autoVersion(true); }
+  if (!viewOnly && app.live) app.live.changed();
 };
+// save the open project without counting it as an edit (changes that came through a share link, sync bookkeeping)
+app.saveQuiet = U.debounce(() => { if (app.P) Store.put(app.P).catch(() => { }); }, 700);
 app.save = async () => {
   clearTimeout(saveT);
   const P = app.P;
@@ -113,6 +117,9 @@ app.saveState = st => {
   const b = $('#save-state');
   if (!b) return;
   b.dataset.st = st;
+  const ls = app.liveState;
+  if (ls && st !== 'error') { b.replaceChildren(icon(ls[0]), el('span', ls[1])); b.dataset.tip = ls[2] || ls[1]; if (ls[0] === 'sync') b.dataset.st = 'saving'; return; }
+  delete b.dataset.tip;
   b.replaceChildren(icon(st === 'saving' ? 'sync' : st === 'error' ? 'cloud_off' : 'cloud_done'), el('span', st === 'saving' ? 'Menyimpan…' : st === 'error' ? 'Gagal disimpan' : 'Tersimpan'));
 };
 addEventListener('pagehide', () => { if (app.dirty) app.save(); });
@@ -120,7 +127,16 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && app
 
 /* ---------------- membuka / beranda ---------------- */
 app.go = hash => { if (location.hash !== hash) location.hash = hash; else route(); };
+let linkKey = AP.Share ? AP.Share.key() : null;
 async function route() {
+  if (linkKey && AP.Share) {   // ?share=<key>: open the shared project (cached under its own id)
+    const key = linkKey;
+    linkKey = null;
+    try {
+      const id = await AP.Share.openLink(key);
+      history.replaceState(null, '', location.pathname + location.search + '#/p/' + id);
+    } catch (e) { console.error(e); UI.toast('Tautan tidak dapat dibuka: ' + (e.message || e), { kind: 'bad' }); }
+  }
   const m = /^#\/p\/([\w-]+)/.exec(location.hash);
   if (m) {
     if (app.P && app.P.id === m[1]) { show('app'); return; }
@@ -142,6 +158,7 @@ function show(which) {
 }
 app.show = show;
 function closeProject() {
+  if (AP.Share && (app.live || app.readOnly)) AP.Share.detach(app);
   if (app.view) { app.view.unmount(); app.view = null; }
   if (app.detail) { app.detail.unmount(); app.detail = null; }
   if (app.tl) { app.tl.unmount(); app.tl = null; }
@@ -170,6 +187,7 @@ async function openProject(P) {
   app.setView(vs.cur || 'gantt', true);
   app.layoutPanes();
   app.updateStatus();
+  if (AP.Share) AP.Share.attach(app);
   Store.putMeta({ ...Store.metaOf(P), opened: Date.now() }).catch(() => { });
 }
 app.openProject = openProject;
@@ -313,6 +331,7 @@ def('exportIcs', { label: 'Kalender (.ics)', icon: 'event', run: () => AP.IO.exp
 def('import', { label: 'Impor', icon: 'upload_file', run: () => AP.IO.importDialog(app) });
 def('options', { label: 'Opsi', icon: 'settings', run: () => AP.Dlg.options() });
 def('lock', { label: 'Kunci dengan Kata Sandi', icon: 'lock', run: () => AP.Lock && AP.Lock.dialog(app) });
+def('share', { label: 'Bagikan', icon: 'share', run: () => AP.Share && AP.Share.dialog(app) });
 def('theme:*', { run: v => { Store.pref('theme', v); app.applyTheme(); AP.Ribbon.refresh(); } });
 
 // edit

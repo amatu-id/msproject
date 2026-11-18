@@ -266,6 +266,7 @@ class SplitView {
     this.grid = new AP.Grid({
       app: this.app, host: this.left, kind, label: this.def.t, canMove: kind === 'task',
       rowH: () => this.app.rowH(), headH: () => this.headH(), autoFilter: !!V.vs(this.P).afOn,
+      canEdit: () => !this.app.readOnly, onEditBlocked: () => { if (this.app.readOnly) UI.toast('Anda membuka tautan "Lihat saja" — proyek tidak dapat diubah', { key: 'ro' }); },
       idText: r => (r.kind === 'group' ? '' : r.x && r.x.root ? '0' : r.x ? r.x.id : ''),
       rowClass: r => V.rowClass(r),
       cell: (r, c) => (r.kind === 'group' ? (c.k === 'name' ? `<span class="gname grp" style="padding-left:6px"><span class="ms">folder_open</span>${esc(r.label)} <span class="gcount">${r.n}</span></span>` : V.groupCell(this.P, r, c, kind)) : null),
