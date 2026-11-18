@@ -1,0 +1,10 @@
+{
+  "name": "Amatu Project",
+  "short_name": "Amatu Project",
+  "description": "Perencanaan proyek gaya Microsoft Project: Gantt, jalur kritis, sumber daya, laporan, cetak & ekspor.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f3f5f7",
+  "theme_color": "#0f7a55",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
