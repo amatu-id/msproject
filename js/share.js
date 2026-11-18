@@ -135,7 +135,9 @@ Sh.attach = app => {
     payload: () => (mine() ? Sh.payload(app.P) : null),
     merge: Sh.merge,
     apply: x => { if (mine()) applyDoc(app, x); },
-    busy: () => !!(UI.isDialogOpen() || (app.view && app.view.grid && app.view.grid.editor) || (app.view && app.view.chart && app.view.chart.drag)),
+    // a dialog that edits the project, a cell being typed in or a bar being dragged: apply remote changes later
+    // (the Bagikan dialog itself changes nothing in the project, it does not pause syncing)
+    busy: () => !!([...document.querySelectorAll('.dlg-back:not(.modeless)')].some(b => !b.querySelector('.share-dlg')) || (app.view && app.view.grid && app.view.grid.editor) || (app.view && app.view.chart && app.view.chart.drag)),
     status: (st, info, e) => { if (mine()) status(app, st, info, e); },
     role: info => { if (!mine()) return; Object.assign(app.P.share, { role: info.role, by: info.by, ownerName: info.owner, owner: s.owner || false }); setRole(app, app.P.share); },
     name: () => (app.P ? app.P.name : ''),
